@@ -238,12 +238,15 @@ Poi limitate con il firewall chi può inviare su UDP 514/6666.
 La pagina **Monitoring → Rotazione dei log dei router**, visibile solo ai
 superuser, imposta la rotazione dei log dei router: syslog e netconsole.
 
-| Valore | Intervallo | Predefinito |
-|---|---|---|
-| frequenza | ogni giorno, settimana o mese | ogni giorno |
-| dimensione massima | 5–100 MB (controllo ogni ora) | 50 MB |
-| conservazione | 7–90 giorni | 30 giorni |
-| file ruotati massimi per log | 7–60 | 30 |
+| Campo nella pagina | Chiave JSON | Variabile del playbook | Valori ammessi | Predefinito |
+|---|---|---|---|---|
+| Frequenza della rotazione | `frequency` | `router_logs_frequency` | `daily`, `weekly`, `monthly` | `daily` |
+| Dimensione massima (MB) | `max_size_mb` | `router_logs_max_size_mb` | 5–100 (controllo ogni ora) | `50` |
+| Conservazione (giorni) | `retention_days` | `router_logs_retention_days` | 7–90 | `30` |
+| File ruotati massimi | `max_files` | `router_logs_max_files` | 7–60 (per ogni log) | `30` |
+
+Nella pagina la frequenza compare tradotta («Ogni giorno»…), ma il valore
+salvato e quello da mettere nel playbook sono sempre le parole chiave inglesi.
 
 La rotazione la fa logrotate, come root. OpenWISP non scrive configurazioni di
 sistema: salva i valori in `OPENWISP_NETCONSOLE_ROTATION_FILE`, un JSON in una
