@@ -19,12 +19,12 @@ La scheda Netconsole di un Linksys WRT3200ACM il cui driver Wi-Fi (mwlwifi)
 scrive un errore dieci volte al secondo; i file ruotati sono elencati per
 scaricarli (`netconsole.log.1` è stato ruotato a 50 MB):
 
-![Scheda Netconsole nella pagina del device](docs/netconsole-tab.png)
+![Scheda Netconsole nella pagina del device](docs/netconsole-tab-v2.png)
 
 La pagina di rotazione dei log dei router (solo superuser), con l'esito
 dell'ultima applicazione sul server:
 
-![Pagina di rotazione dei log dei router](docs/rotation-page.png)
+![Pagina di rotazione dei log dei router](docs/rotation-page-v2.png)
 
 ## Come funziona
 
