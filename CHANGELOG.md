@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Example playbook (README and `examples/ansible/`) with generic rsyslog and
+  rotation script templates; CI checks it (syntax, ansible-lint, rsyslogd -N1)
+  and tests the rotation script against injections, symlinks and FIFOs.
+- CI: vulnerabilities of the OpenWISP stack reported by pip-audit as a
+  warning in the job summary instead of failing the build.
+
 ## 0.1.1
 
 - Rotation page: the frequency in the server status is shown with its label

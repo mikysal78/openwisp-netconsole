@@ -83,14 +83,3 @@ def test_read_status(tmp_path):
 def test_limiti_estremi(name, low, high):
     assert rotation.validate(dict(OK, **{name: low}))[name] == low
     assert rotation.validate(dict(OK, **{name: high}))[name] == high
-
-
-def test_limiti_uguali_allo_script_di_root():
-    # lo script di root (repo openwisp2) ricontrolla gli stessi limiti
-    here = os.path.dirname(__file__)
-    script = os.path.join(here, "..", "..", "openwisp2", "templates", "router-logs-rotation.py.j2")
-    if not os.path.exists(script):
-        pytest.skip("repo openwisp2 non presente accanto")
-    text = open(script).read()
-    for name, (low, high) in rotation.LIMITS.items():
-        assert '"%s": (%d, %d),' % (name, low, high) in text

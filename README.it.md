@@ -63,6 +63,166 @@ Poi `collectstatic` e riavvio di OpenWISP. Con il ruolo
 L'utente con cui gira OpenWISP (es. `www-data`) deve poter **leggere** la
 directory dei log: conviene un gruppo dedicato, non `adm`.
 
+### Playbook di esempio
+
+Un playbook di base con il ruolo ufficiale
+[ansible-openwisp2](https://github.com/openwisp/ansible-openwisp2): installa il
+modulo e prepara il lato server per i log dei router (rsyslog, il gruppo
+`router-logs` in sola lettura, lo script di rotazione di root e il suo cron).
+È [`examples/ansible/playbook.yml`](examples/ansible/playbook.yml); i due
+template che usa sono in [`examples/ansible/templates/`](examples/ansible/templates/).
+La CI lo controlla con `--syntax-check`, `ansible-lint` e `rsyslogd -N1`, e
+prova lo script di rotazione contro iniezioni, symlink e FIFO.
+
+```bash
+ansible-galaxy role install openwisp.openwisp2
+cd examples/ansible
+ansible-playbook -i hosts playbook.yml
+```
+
+```yaml
+---
+# Basic example: OpenWISP with openwisp-netconsole, installed with the
+# official ansible-openwisp2 role, plus the server side for the router logs
+# (rsyslog, read-only permissions, rotation managed from the admin page).
+#
+#   ansible-galaxy role install openwisp.openwisp2
+#   ansible-playbook -i hosts playbook.yml
+#
+# The templates are in templates/ next to this file.
+
+- name: OpenWISP with openwisp-netconsole
+  hosts: openwisp2
+  become: true
+  roles:
+    - openwisp.openwisp2
+  vars:
+    openwisp2_extra_python_packages:
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl"
+    # The role appends extra apps at the end of INSTALLED_APPS, after
+    # openwisp_controller and openwisp_monitoring, as the module requires.
+    openwisp2_extra_django_apps:
+      - openwisp_netconsole
+
+- name: Router logs (rsyslog, permissions, rotation)
+  hosts: openwisp2
+  become: true
+  vars:
+    router_logs_dir: /opt/router-logs
+    # Read-only group for OpenWISP (www-data): not adm, which would give
+    # OpenWISP access to all the system logs
+    router_logs_group: router-logs
+    router_logs_syslog_port: 514
+    router_logs_netconsole_port: 6666
+    # Rotation starting values; afterwards they are changed from the admin
+    # page and running the playbook again does not overwrite them
+    router_logs_frequency: daily # daily, weekly or monthly
+    router_logs_max_size_mb: 50 # 5-100
+    router_logs_retention_days: 30 # 7-90
+    router_logs_max_files: 30 # 7-60
+    # Defaults of OPENWISP_NETCONSOLE_ROTATION_FILE / _STATUS_FILE
+    router_logs_rotation_settings_file: /var/lib/openwisp-netconsole/rotation.json
+    router_logs_rotation_status_file: /var/lib/router-logs-rotation/status.json
+
+  tasks:
+    - name: Install rsyslog and logrotate
+      ansible.builtin.apt:
+        name: [rsyslog, logrotate]
+        state: present
+
+    - name: Router logs group
+      ansible.builtin.group:
+        name: "{{ router_logs_group }}"
+        system: true
+
+    # Group membership applies to processes started afterwards
+    - name: OpenWISP (www-data) reads the router logs
+      ansible.builtin.user:
+        name: www-data
+        groups: "{{ router_logs_group }}"
+        append: true
+      notify: Restart openwisp2
+
+    - name: Router logs directory
+      ansible.builtin.file:
+        path: "{{ router_logs_dir }}"
+        state: directory
+        owner: root
+        group: "{{ router_logs_group }}"
+        mode: "0750"
+
+    - name: Rsyslog configuration for the routers
+      ansible.builtin.template:
+        src: templates/rsyslog-router-logs.conf.j2
+        dest: /etc/rsyslog.d/30-router-logs.conf
+        mode: "0644"
+      notify: Restart rsyslog
+
+    - name: Rotation settings directory (written by OpenWISP)
+      ansible.builtin.file:
+        path: "{{ router_logs_rotation_settings_file | dirname }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+
+    - name: Rotation status directory (written by root)
+      ansible.builtin.file:
+        path: "{{ router_logs_rotation_status_file | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    # Only if missing: after the first run the values are the ones chosen
+    # on the admin page
+    - name: Rotation starting values
+      ansible.builtin.copy:
+        dest: "{{ router_logs_rotation_settings_file }}"
+        owner: www-data
+        group: www-data
+        mode: "0644"
+        force: false
+        content: "{{ {'frequency': router_logs_frequency,
+                      'max_size_mb': router_logs_max_size_mb | int,
+                      'retention_days': router_logs_retention_days | int,
+                      'max_files': router_logs_max_files | int} | to_json }}\n"
+
+    - name: Router log rotation script
+      ansible.builtin.template:
+        src: templates/router-logs-rotation.py.j2
+        dest: /usr/local/sbin/router-logs-rotation
+        owner: root
+        group: root
+        mode: "0755"
+      notify: Generate the logrotate configuration
+
+    - name: Hourly rotation (applies the admin values and maxsize)
+      ansible.builtin.copy:
+        dest: /etc/cron.d/router-logs
+        mode: "0644"
+        content: |
+          # Managed by Ansible: do not edit
+          17 * * * * root /usr/local/sbin/router-logs-rotation
+
+  handlers:
+    # Validate the whole configuration first: with an error rsyslog would
+    # start ignoring the rules, the server ones included
+    - name: Restart rsyslog
+      ansible.builtin.shell: rsyslogd -N1 -f /etc/rsyslog.conf && systemctl restart rsyslog
+      changed_when: true
+
+    - name: Restart openwisp2 # noqa: command-instead-of-module (no community.general needed)
+      ansible.builtin.command: supervisorctl restart openwisp2
+      changed_when: true
+
+    - name: Generate the logrotate configuration
+      ansible.builtin.command: /usr/local/sbin/router-logs-rotation --config-only
+      changed_when: true
+```
+
+Poi limitate con il firewall chi può inviare su UDP 514/6666.
+
 ### Impostazioni
 
 | Impostazione | Default | Significato |

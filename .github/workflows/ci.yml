@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install pytest "django~=5.2.0" openwisp-utils requests
+      - run: pip install pytest jinja2 "django~=5.2.0" openwisp-utils requests
       - name: Tests
         run: pytest -v
       - name: Migrations match the models
@@ -59,10 +59,53 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Known vulnerabilities in the dependencies
+      - run: pip install pip-audit .
+      # The package itself has no dependencies of its own besides
+      # openwisp-controller: vulnerabilities in the OpenWISP stack are
+      # reported in the job summary (and by Dependabot) without failing CI,
+      # since they are fixed by upgrading OpenWISP, not this package.
+      - name: Known vulnerabilities in the OpenWISP stack (report)
         run: |
-          pip install pip-audit .
-          pip-audit
+          {
+            echo "## pip-audit (OpenWISP stack)"
+            echo '```'
+            pip-audit --progress-spinner off 2>&1 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if ! pip-audit --progress-spinner off >/dev/null 2>&1; then
+            echo "::warning::pip-audit found known vulnerabilities in the OpenWISP stack: see the job summary"
+          fi
+
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install ansible-core ansible-lint jinja2
+      - run: ansible-galaxy role install openwisp.openwisp2
+      - name: Playbook syntax
+        working-directory: examples/ansible
+        run: |
+          printf '[openwisp2]\nlocalhost\n' > /tmp/hosts
+          ansible-playbook --syntax-check -i /tmp/hosts playbook.yml
+      - name: ansible-lint
+        working-directory: examples/ansible
+        run: ansible-lint playbook.yml
+      - name: Generated rsyslog configuration is valid
+        run: |
+          sudo apt-get install -y -qq rsyslog
+          python - <<'PY'
+          import jinja2
+          t = open("examples/ansible/templates/rsyslog-router-logs.conf.j2").read()
+          conf = jinja2.Template(t).render(
+              ansible_managed="ci", router_logs_dir="/tmp/router-logs", router_logs_group="adm",
+              router_logs_syslog_port=10514, router_logs_netconsole_port=16666,
+          )
+          open("/tmp/router-logs.conf", "w").write(conf)
+          PY
+          rsyslogd -N1 -f /tmp/router-logs.conf
 
   build:
     runs-on: ubuntu-latest
