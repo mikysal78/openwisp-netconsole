@@ -237,11 +237,12 @@ class RotationSettingsAdmin(admin.ModelAdmin):
         applied = parse_datetime(str(status.get("applied", "")))
         when = localize(localtime(applied)) if applied else "?"
         values = status.get("settings") if isinstance(status.get("settings"), dict) else {}
+        frequency = dict(RotationSettings.FREQUENCY_CHOICES).get(values.get("frequency"), "?")
         text = format_html(
             "{}: {} — {} {} MB, {} {}, {} {}",
             _("Last applied"),
             when,
-            values.get("frequency", "?"),
+            frequency,
             values.get("max_size_mb", "?"),
             values.get("retention_days", "?"),
             _("days"),

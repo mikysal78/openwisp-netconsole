@@ -52,6 +52,18 @@ jobs:
           DJANGO_SETTINGS_MODULE: ci.settings
         run: django-admin makemigrations openwisp_netconsole --check --dry-run
 
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Known vulnerabilities in the dependencies
+        run: |
+          pip install pip-audit .
+          pip-audit
+
   build:
     runs-on: ubuntu-latest
     steps:

@@ -40,13 +40,13 @@ Dalla [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (wheel già compilato, con `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.0/openwisp_netconsole-0.1.0-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl
 ```
 
 oppure dal tag git:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.0"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.1"
 ```
 
 In `settings.py`, **dopo** `openwisp_controller.config` e
@@ -153,6 +153,12 @@ controlli su JavaScript e traduzione, e compila il pacchetto verificandone il
 contenuto. **Release** (a ogni tag `v*`) controlla che il tag corrisponda alla
 versione, compila wheel e sdist e li allega alla release di GitHub con
 `SHA256SUMS`.
+
+## Segnalare vulnerabilità
+
+Vedi [SECURITY.md](SECURITY.md): segnalazione privata tramite GitHub, advisory
+di sicurezza e CVE per i problemi confermati. Sul repository sono attivi gli
+avvisi Dependabot, la scansione dei segreti, CodeQL e `pip-audit` (nella CI).
 
 ## Licenza
 

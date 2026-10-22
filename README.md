@@ -40,13 +40,13 @@ From the [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (built wheel, with `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.0/openwisp_netconsole-0.1.0-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl
 ```
 
 or from the git tag:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.0"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.1"
 ```
 
 In `settings.py`, **after** `openwisp_controller.config` and
@@ -153,6 +153,12 @@ Python 3.10–3.13, the check that migrations match the models, the JavaScript
 syntax and translation checks, and builds the package verifying its contents.
 **Release** (on every `v*` tag) checks that the tag matches the version, builds
 wheel and sdist and attaches them to the GitHub release with `SHA256SUMS`.
+
+## Reporting vulnerabilities
+
+See [SECURITY.md](SECURITY.md): private reporting through GitHub, security
+advisories and CVE for confirmed issues. Dependabot alerts, secret scanning,
+CodeQL and `pip-audit` (in CI) are enabled on the repository.
 
 ## License
 
