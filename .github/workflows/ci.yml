@@ -105,7 +105,11 @@ jobs:
           )
           open("/tmp/router-logs.conf", "w").write(conf)
           PY
-          rsyslogd -N1 -f /tmp/router-logs.conf
+          # AppArmor does not let rsyslogd read from /tmp: validate it from
+          # /etc/rsyslog.d together with the system configuration, as the
+          # playbook handler does
+          sudo install -m 0644 /tmp/router-logs.conf /etc/rsyslog.d/30-router-logs.conf
+          sudo rsyslogd -N1 -f /etc/rsyslog.conf
 
   build:
     runs-on: ubuntu-latest
