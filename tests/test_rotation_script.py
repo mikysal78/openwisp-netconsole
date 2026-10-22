@@ -17,7 +17,14 @@ from openwisp_netconsole import rotation
 jinja2 = pytest.importorskip("jinja2")
 
 TEMPLATE = os.path.join(
-    os.path.dirname(__file__), "..", "examples", "ansible", "templates", "router-logs-rotation.py.j2"
+    os.path.dirname(__file__),
+    "..",
+    "examples",
+    "ansible",
+    "roles",
+    "router_logs",
+    "templates",
+    "router-logs-rotation.py.j2",
 )
 DEFAULTS = {"frequency": "daily", "max_size_mb": 50, "retention_days": 30, "max_files": 30}
 

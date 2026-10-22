@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Example playbook split into the `router_logs` role (defaults, tasks,
+  handlers, templates): the playbook in the README is now a few lines.
+
 ## 0.1.2
 
 - Screenshots in the README (`docs/`).

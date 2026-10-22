@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: router_logs
+  author: Michele Salerno
+  description: Server side of openwisp-netconsole (rsyslog, read-only access, log rotation)
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [all]
+    - name: Ubuntu
+      versions: [all]
+dependencies: []

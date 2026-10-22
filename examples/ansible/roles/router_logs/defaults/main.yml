@@ -1,0 +1,28 @@
+---
+# Server side of openwisp-netconsole: rsyslog for the router logs, read-only
+# access for OpenWISP and the rotation managed from the admin page.
+
+# Where rsyslog stores the logs (OPENWISP_NETCONSOLE_LOG_DIR in Django)
+router_logs_dir: /opt/router-logs
+# Read-only group for the user OpenWISP runs as: not adm, which would give
+# OpenWISP access to all the system logs
+router_logs_group: router-logs
+router_logs_openwisp_user: www-data
+# UDP inputs: OpenWrt remote syslog and netconsole (restrict the senders with
+# the firewall)
+router_logs_syslog_port: 514
+router_logs_netconsole_port: 6666
+
+# Rotation starting values: afterwards they are changed from the admin page
+# and running the playbook again does not overwrite them
+router_logs_frequency: daily # daily, weekly or monthly
+router_logs_max_size_mb: 50 # 5-100
+router_logs_retention_days: 30 # 7-90
+router_logs_max_files: 30 # 7-60
+
+# Files exchanged with the admin page: defaults of
+# OPENWISP_NETCONSOLE_ROTATION_FILE / OPENWISP_NETCONSOLE_ROTATION_STATUS_FILE
+router_logs_rotation_settings_file: /var/lib/openwisp-netconsole/rotation.json
+router_logs_rotation_status_file: /var/lib/router-logs-rotation/status.json
+# supervisor program of the OpenWISP web application (ansible-openwisp2 role)
+router_logs_openwisp_supervisor_program: openwisp2

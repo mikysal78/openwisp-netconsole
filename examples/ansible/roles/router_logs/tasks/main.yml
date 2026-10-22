@@ -1,0 +1,80 @@
+---
+- name: Install rsyslog and logrotate
+  ansible.builtin.apt:
+    name: [rsyslog, logrotate]
+    state: present
+
+- name: Router logs group
+  ansible.builtin.group:
+    name: "{{ router_logs_group }}"
+    system: true
+
+# Group membership applies to processes started afterwards
+- name: OpenWISP reads the router logs (read-only group)
+  ansible.builtin.user:
+    name: "{{ router_logs_openwisp_user }}"
+    groups: "{{ router_logs_group }}"
+    append: true
+  notify: Restart openwisp2 for the router logs group
+
+- name: Router logs directory
+  ansible.builtin.file:
+    path: "{{ router_logs_dir }}"
+    state: directory
+    owner: root
+    group: "{{ router_logs_group }}"
+    mode: "0750"
+
+- name: Rsyslog configuration for the routers
+  ansible.builtin.template:
+    src: templates/rsyslog-router-logs.conf.j2
+    dest: /etc/rsyslog.d/30-router-logs.conf
+    mode: "0644"
+  notify: Restart rsyslog for the router logs
+
+- name: Rotation settings directory (written by OpenWISP)
+  ansible.builtin.file:
+    path: "{{ router_logs_rotation_settings_file | dirname }}"
+    state: directory
+    owner: "{{ router_logs_openwisp_user }}"
+    group: "{{ router_logs_openwisp_user }}"
+    mode: "0755"
+
+- name: Rotation status directory (written by root)
+  ansible.builtin.file:
+    path: "{{ router_logs_rotation_status_file | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# Only if missing: after the first run the values are the ones chosen
+# on the admin page
+- name: Rotation starting values
+  ansible.builtin.copy:
+    dest: "{{ router_logs_rotation_settings_file }}"
+    owner: "{{ router_logs_openwisp_user }}"
+    group: "{{ router_logs_openwisp_user }}"
+    mode: "0644"
+    force: false
+    content: "{{ {'frequency': router_logs_frequency,
+                  'max_size_mb': router_logs_max_size_mb | int,
+                  'retention_days': router_logs_retention_days | int,
+                  'max_files': router_logs_max_files | int} | to_json }}\n"
+
+- name: Router log rotation script
+  ansible.builtin.template:
+    src: templates/router-logs-rotation.py.j2
+    dest: /usr/local/sbin/router-logs-rotation
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Generate the logrotate configuration
+
+- name: Hourly rotation (applies the admin values and maxsize)
+  ansible.builtin.copy:
+    dest: /etc/cron.d/router-logs
+    mode: "0644"
+    content: |
+      # Managed by Ansible: do not edit
+      17 * * * * root /usr/local/sbin/router-logs-rotation

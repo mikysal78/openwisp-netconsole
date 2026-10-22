@@ -103,7 +103,7 @@ jobs:
           sudo apt-get install -y -qq rsyslog
           python - <<'PY'
           import jinja2
-          t = open("examples/ansible/templates/rsyslog-router-logs.conf.j2").read()
+          t = open("examples/ansible/roles/router_logs/templates/rsyslog-router-logs.conf.j2").read()
           conf = jinja2.Template(t).render(
               ansible_managed="ci", router_logs_dir="/tmp/router-logs", router_logs_group="adm",
               router_logs_syslog_port=10514, router_logs_netconsole_port=16666,

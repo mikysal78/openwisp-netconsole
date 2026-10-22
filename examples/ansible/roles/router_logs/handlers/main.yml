@@ -1,0 +1,14 @@
+---
+# Validate the whole configuration first: with an error rsyslog would
+# start ignoring the rules, the server ones included
+- name: Restart rsyslog for the router logs
+  ansible.builtin.shell: rsyslogd -N1 -f /etc/rsyslog.conf && systemctl restart rsyslog
+  changed_when: true
+
+- name: Restart openwisp2 for the router logs group # noqa: command-instead-of-module (no community.general needed)
+  ansible.builtin.command: supervisorctl restart {{ router_logs_openwisp_supervisor_program }}
+  changed_when: true
+
+- name: Generate the logrotate configuration
+  ansible.builtin.command: /usr/local/sbin/router-logs-rotation --config-only
+  changed_when: true
