@@ -7,4 +7,5 @@
   white-space: pre-wrap; word-break: break-all;
 }
 #netconsole-group .netconsole-files { margin-top: 8px; }
+#netconsole-group .netconsole-files > span:first-child { margin-right: 6px; }
 #netconsole-group .netconsole-file-list a { margin-right: 12px; }

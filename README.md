@@ -13,6 +13,19 @@ syslog has no time to send anything.
 Born for the [NINUX Basilicata](https://github.com/mikysal78/openwisp2) network,
 where routers send netconsole to the OpenWISP server.
 
+## Screenshots
+
+The Netconsole tab of a Linksys WRT3200ACM whose Wi-Fi driver (mwlwifi) is
+logging an error ten times a second; the rotated files are listed for
+download (`netconsole.log.1` was rotated at 50 MB):
+
+![Netconsole tab on the device page](docs/netconsole-tab.png)
+
+The router log rotation page (superusers only), with the status of the last
+run on the server:
+
+![Router log rotation page](docs/rotation-page.png)
+
 ## How it works
 
 ```
@@ -40,13 +53,13 @@ From the [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (built wheel, with `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl
 ```
 
 or from the git tag:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.1"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.2"
 ```
 
 In `settings.py`, **after** `openwisp_controller.config` and
@@ -98,7 +111,7 @@ ansible-playbook -i hosts playbook.yml
     - openwisp.openwisp2
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl"
     # The role appends extra apps at the end of INSTALLED_APPS, after
     # openwisp_controller and openwisp_monitoring, as the module requires.
     openwisp2_extra_django_apps:

@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.2
 
+- Screenshots in the README (`docs/`).
+- Netconsole tab: space between "Download:" and the file list.
 - Example OpenWISP template for the devices (`examples/openwisp-template/`):
   hotplug script with the `ninux_node` userdata, server and port as template
   variables; CI runs shellcheck and renders it with netjsonconfig.

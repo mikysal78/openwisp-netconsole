@@ -13,6 +13,19 @@ syslog non fa in tempo a partire.
 Nato per la rete [NINUX Basilicata](https://github.com/mikysal78/openwisp2),
 dove i router mandano netconsole al server OpenWISP.
 
+## Schermate
+
+La scheda Netconsole di un Linksys WRT3200ACM il cui driver Wi-Fi (mwlwifi)
+scrive un errore dieci volte al secondo; i file ruotati sono elencati per
+scaricarli (`netconsole.log.1` è stato ruotato a 50 MB):
+
+![Scheda Netconsole nella pagina del device](docs/netconsole-tab.png)
+
+La pagina di rotazione dei log dei router (solo superuser), con l'esito
+dell'ultima applicazione sul server:
+
+![Pagina di rotazione dei log dei router](docs/rotation-page.png)
+
 ## Come funziona
 
 ```
@@ -40,13 +53,13 @@ Dalla [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (wheel già compilato, con `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl
 ```
 
 oppure dal tag git:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.1"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.2"
 ```
 
 In `settings.py`, **dopo** `openwisp_controller.config` e
@@ -98,7 +111,7 @@ ansible-playbook -i hosts playbook.yml
     - openwisp.openwisp2
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.1/openwisp_netconsole-0.1.1-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl"
     # The role appends extra apps at the end of INSTALLED_APPS, after
     # openwisp_controller and openwisp_monitoring, as the module requires.
     openwisp2_extra_django_apps:
