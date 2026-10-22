@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Example OpenWISP template for the devices (`examples/openwisp-template/`):
+  hotplug script with the `ninux_node` userdata, server and port as template
+  variables; CI runs shellcheck and renders it with netjsonconfig.
 - Example playbook (README and `examples/ansible/`) with generic rsyslog and
   rotation script templates; CI checks it (syntax, ansible-lint, rsyslogd -N1)
   and tests the rotation script against injections, symlinks and FIFOs.

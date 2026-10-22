@@ -258,14 +258,39 @@ sua directory. Ogni ora lo script di root (`router-logs-rotation` nel repo
 - scrive l'esito in `OPENWISP_NETCONSOLE_ROTATION_STATUS_FILE`, in una
   directory di root. La pagina mostra quell'esito.
 
-### Router e rsyslog
+### Template per i device (lato router)
 
-Sul router netconsole va caricato in formato esteso (`+` nei parametri) e il
-target deve avere l'userdata `ninux_node` con il nome del device. L'userdata
-richiede un kernel con `CONFIG_NETCONSOLE_DYNAMIC=y` (OpenWrt lo compila con
-`=n`). Esempio di script e configurazione rsyslog:
-[openwisp2](https://github.com/mikysal78/openwisp2) (template
-`openwisp-templates/netconsole.json`, `templates/rsyslog-router-logs.conf.j2`).
+[`examples/openwisp-template/netconsole.json`](examples/openwisp-template/netconsole.json)
+è un template OpenWISP che installa sui router uno script di hotplug
+([`30-netconsole.sh`](examples/openwisp-template/30-netconsole.sh)). A ogni
+`ifup`:
+
+- trova la strada verso il server e il MAC del prossimo hop;
+- carica netconsole in formato esteso (`+`), ricaricandolo solo se cambiano i
+  parametri o l'interfaccia;
+- aggiunge l'userdata `ninux_node` con il nome del device (`{{ name }}`,
+  ricontrollato dallo script), che rsyslog usa per la cartella.
+
+Per importarlo in OpenWISP: **Templates → Add**, backend OpenWRT, type
+Generic, il contenuto di `config` nell'editor avanzato e `default_values` in
+**Configuration variables**. Poi assegnatelo ai device.
+
+| Variabile | Predefinito | Significato |
+|---|---|---|
+| `netconsole_server` | `192.0.2.10` (esempio) | IPv4 del server con rsyslog |
+| `netconsole_port` | `6666` | porta UDP dell'ingresso netconsole |
+
+Requisiti del firmware:
+
+- `kmod-netconsole` (e il supporto netpoll nel kernel);
+- per il nome del device, un kernel con `CONFIG_NETCONSOLE_DYNAMIC=y` e
+  `kmod-fs-configfs`. OpenWrt compila kmod-netconsole con `=n`
+  (`package/kernel/linux/modules/netsupport.mk`), quindi va cambiato nella
+  vostra build. Senza, i messaggi arrivano lo stesso, nella cartella con l'IP
+  sorgente.
+
+La CI controlla lo script con `shellcheck` e genera il template con
+netjsonconfig.
 
 ## Sicurezza
 

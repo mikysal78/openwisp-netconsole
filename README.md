@@ -260,14 +260,39 @@ repo):
 - writes the outcome to `OPENWISP_NETCONSOLE_ROTATION_STATUS_FILE`, in a root
   directory. The page shows that outcome.
 
-### Router and rsyslog
+### Template for the devices (router side)
 
-On the router netconsole must be loaded in extended format (`+` in the
-parameters) and the target needs the `ninux_node` userdata with the device
-name. Userdata requires a kernel with `CONFIG_NETCONSOLE_DYNAMIC=y` (OpenWrt
-builds it with `=n`). Example script and rsyslog configuration:
-[openwisp2](https://github.com/mikysal78/openwisp2) (template
-`openwisp-templates/netconsole.json`, `templates/rsyslog-router-logs.conf.j2`).
+[`examples/openwisp-template/netconsole.json`](examples/openwisp-template/netconsole.json)
+is an OpenWISP template that installs a hotplug script
+([`30-netconsole.sh`](examples/openwisp-template/30-netconsole.sh)) on the
+routers. On every `ifup` it:
+
+- finds the route to the server and the MAC of the next hop;
+- loads netconsole in extended format (`+`), reloading it only when the
+  parameters or the interface change;
+- adds the `ninux_node` userdata with the device name (`{{ name }}`, checked
+  again by the script), which rsyslog uses for the folder.
+
+Import it in OpenWISP: **Templates → Add**, backend OpenWRT, type Generic, the
+content of `config` in the advanced editor and `default_values` in
+**Configuration variables**. Then assign it to the devices.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `netconsole_server` | `192.0.2.10` (example) | IPv4 of the server running rsyslog |
+| `netconsole_port` | `6666` | UDP port of the netconsole input |
+
+Firmware requirements:
+
+- `kmod-netconsole` (and netpoll support in the kernel);
+- for the device name, a kernel with `CONFIG_NETCONSOLE_DYNAMIC=y` and
+  `kmod-fs-configfs`. OpenWrt builds kmod-netconsole with `=n`
+  (`package/kernel/linux/modules/netsupport.mk`), so it must be changed in
+  your build. Without it the messages still arrive, in the folder named after
+  the source IP.
+
+CI checks the script with `shellcheck` and renders the template with
+netjsonconfig.
 
 ## Security
 

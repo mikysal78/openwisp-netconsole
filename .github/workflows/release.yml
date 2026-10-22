@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install build pytest jinja2
+      - run: pip install build pytest jinja2 netjsonconfig
       - name: Tag matches the package version
         run: |
           version=$(python -c "import openwisp_netconsole as m; print(m.__version__)")

@@ -1,0 +1,18 @@
+{
+  "name": "Netconsole",
+  "backend": "netjsonconfig.OpenWrt",
+  "type": "generic",
+  "default_values": {
+    "netconsole_server": "192.0.2.10",
+    "netconsole_port": "6666"
+  },
+  "config": {
+    "files": [
+      {
+        "path": "/etc/hotplug.d/iface/30-netconsole",
+        "mode": "0755",
+        "contents": "#!/bin/sh\n# netconsole: kernel messages sent in real time over UDP to the server, which\n# stores them in <log dir>/netconsole-<device name>/netconsole.log (rsyslog)\n# and shows them in the \"Netconsole\" tab of the device in OpenWISP\n# (openwisp-netconsole). Useful for hangs and kernel panics, when syslog has\n# no time to send anything.\n#\n# netconsole binds to an interface and sends packets to a fixed MAC (the next\n# hop towards the server): on every ifup the route is computed again and the\n# module is reloaded only if the parameters changed.\n[ \"$ACTION\" = \"ifup\" ] || exit 0\n\nDST_IP='{{ netconsole_server }}'\nDST_PORT='{{ netconsole_port }}'\nSTATE=/tmp/netconsole.params\n\n# device name from OpenWISP (a hostname): only safe characters, otherwise no\n# userdata\nNODE='{{ name }}'\ncase \"$NODE\" in\n\t\"\" | *[!A-Za-z0-9._-]*) NODE=\"\" ;;\nesac\n\n# Device name in every message: extended format (\"+\") with the ninux_node\n# userdata, so the server keeps one folder per device whatever the source IP.\n# Needs a kernel with CONFIG_NETCONSOLE_DYNAMIC=y; without it messages still\n# arrive and the server falls back to the source IP.\nnetconsole_userdata() {\n\tcfg=/sys/kernel/config\n\t[ -d \"$cfg/netconsole\" ] || mount -t configfs configfs \"$cfg\" 2>/dev/null\n\tud=\"$cfg/netconsole/cmdline0/userdata\"\n\t[ -d \"$ud\" ] || return 0\n\tmkdir -p \"$ud/ninux_node\" && printf '%s' \"$NODE\" >\"$ud/ninux_node/value\"\n}\n\n# shellcheck disable=SC2046\nset -- $(ip -4 route get \"$DST_IP\" 2>/dev/null | head -n 1)\ndev=\"\" via=\"\" src=\"\"\nwhile [ $# -gt 0 ]; do\n\tcase \"$1\" in\n\t\tdev) dev=$2 ;;\n\t\tvia) via=$2 ;;\n\t\tsrc) src=$2 ;;\n\tesac\n\tshift\ndone\n[ -n \"$dev\" ] && [ -n \"$src\" ] || exit 0\n\n# MAC of the next hop: the gateway, or the server if it is on the same network\nhop=${via:-$DST_IP}\nping -c 1 -W 2 -I \"$dev\" \"$hop\" >/dev/null 2>&1\nmac=\"$(ip neigh show \"$hop\" dev \"$dev\" 2>/dev/null | awk '/lladdr/ { print $3; exit }')\"\nif [ -z \"$mac\" ]; then\n\tlogger -t netconsole \"no MAC for $hop on $dev: netconsole not enabled\"\n\texit 0\nfi\n\nparams=\"6665@$src/$dev,$DST_PORT@$DST_IP/$mac\"\n# the ifindex changes when the device is recreated (e.g. VPN interfaces after\n# boot): netconsole detaches and must be reloaded even with the same parameters\nifindex=\"$(cat \"/sys/class/net/$dev/ifindex\" 2>/dev/null)\"\nif [ \"$(cat \"$STATE\" 2>/dev/null)\" = \"$params $ifindex $NODE\" ] && grep -q '^netconsole ' /proc/modules; then\n\texit 0\nfi\n\nrmmod netconsole 2>/dev/null\nif insmod netconsole \"netconsole=+$params\"; then\n\t[ -z \"$NODE\" ] || netconsole_userdata\n\techo \"$params $ifindex $NODE\" >\"$STATE\"\n\tlogger -t netconsole \"enabled: $src/$dev -> $DST_IP:$DST_PORT ($mac)\"\nelse\n\trm -f \"$STATE\"\n\tlogger -t netconsole \"ERROR: netconsole not enabled ($params)\"\nfi\nexit 0\n"
+      }
+    ]
+  }
+}
