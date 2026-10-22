@@ -1,0 +1,10 @@
+#netconsole-group .netconsole { padding: 10px; }
+#netconsole-group .netconsole-toolbar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 8px; }
+#netconsole-group .netconsole-status { color: var(--body-quiet-color, #666); }
+#netconsole-group .netconsole-log {
+  height: 60vh; overflow: auto; margin: 0; padding: 8px;
+  background: #1e1e1e; color: #ddd; font-size: 12px; line-height: 1.4;
+  white-space: pre-wrap; word-break: break-all;
+}
+#netconsole-group .netconsole-files { margin-top: 8px; }
+#netconsole-group .netconsole-file-list a { margin-right: 12px; }

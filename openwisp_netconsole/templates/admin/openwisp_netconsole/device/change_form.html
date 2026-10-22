@@ -1,0 +1,24 @@
+{% extends netconsole_parent_template|default:"admin/config/device/change_form.html" %}
+{% load i18n %}
+{% block after_field_sets %}
+{{ block.super }}
+{% if not add and netconsole_url %}
+<div class="inline-group" id="netconsole-group">
+  <fieldset class="module">
+    <h2>{% trans "Netconsole" %}</h2>
+    <div class="netconsole" data-url="{{ netconsole_url }}" data-refresh="{{ netconsole_refresh }}"
+         data-empty="{% trans 'No netconsole logs for this device.' %}"
+         data-error="{% trans 'Error while reading the logs.' %}"
+         data-updated="{% trans 'Updated at' %}">
+      <div class="netconsole-toolbar">
+        <label>{% trans "Source" %}: <select class="netconsole-source"></select></label>
+        <label><input type="checkbox" class="netconsole-follow" checked> {% trans "Auto refresh" %}</label>
+        <span class="netconsole-status"></span>
+      </div>
+      <pre class="netconsole-log"></pre>
+      <div class="netconsole-files"><span>{% trans "Download" %}:</span> <span class="netconsole-file-list"></span></div>
+    </div>
+  </fieldset>
+</div>
+{% endif %}
+{% endblock %}

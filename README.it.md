@@ -1,0 +1,159 @@
+# openwisp-netconsole
+
+[🇬🇧 English](README.md) | 🇮🇹 Italiano
+
+[![CI](https://github.com/mikysal78/openwisp-netconsole/actions/workflows/ci.yml/badge.svg)](https://github.com/mikysal78/openwisp-netconsole/actions/workflows/ci.yml)
+
+Scheda **Netconsole** nella pagina del device di [OpenWISP](https://openwisp.org/):
+mostra in tempo reale i messaggi del kernel che il router invia con
+[netconsole](https://docs.kernel.org/networking/netconsole.html) e salvati sul
+server da rsyslog. Serve soprattutto per i blocchi e i kernel panic, quando il
+syslog non fa in tempo a partire.
+
+Nato per la rete [NINUX Basilicata](https://github.com/mikysal78/openwisp2),
+dove i router mandano netconsole al server OpenWISP.
+
+## Come funziona
+
+```
+router (netconsole, formato esteso + userdata ninux_node=<nome>)
+   │ UDP 6666
+   ▼
+rsyslog  ──►  <LOG_DIR>/netconsole-<nome del device>/netconsole.log
+              <LOG_DIR>/netconsole-<ip sorgente>/netconsole.log   (messaggi senza nome)
+   ▲
+   │ sola lettura
+OpenWISP: scheda «Netconsole» del device
+```
+
+- La scheda mostra la cartella con il nome del device e quelle con il suo IP di
+  gestione e il suo ultimo IP.
+- Chiede al server solo le righe nuove ogni pochi secondi, mentre la scheda è
+  aperta e la pagina è visibile.
+- Elenca i file ruotati (`netconsole.log.1`, `.gz`…) per scaricarli.
+- Si aggiunge all'admin del device già registrato (anche quello di
+  openwisp-monitoring) senza sostituirlo.
+
+## Installazione
+
+Dalla [release](https://github.com/mikysal78/openwisp-netconsole/releases)
+(wheel già compilato, con `SHA256SUMS`):
+
+```bash
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.0/openwisp_netconsole-0.1.0-py3-none-any.whl
+```
+
+oppure dal tag git:
+
+```bash
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.0"
+```
+
+In `settings.py`, **dopo** `openwisp_controller.config` e
+`openwisp_monitoring.device`:
+
+```python
+INSTALLED_APPS += ["openwisp_netconsole"]
+```
+
+Poi `collectstatic` e riavvio di OpenWISP. Con il ruolo
+[ansible-openwisp2](https://github.com/openwisp/ansible-openwisp2):
+`openwisp2_extra_python_packages` e `openwisp2_extra_django_apps`.
+
+L'utente con cui gira OpenWISP (es. `www-data`) deve poter **leggere** la
+directory dei log: conviene un gruppo dedicato, non `adm`.
+
+### Impostazioni
+
+| Impostazione | Default | Significato |
+|---|---|---|
+| `OPENWISP_NETCONSOLE_LOG_DIR` | `/opt/router-logs` | radice delle cartelle `netconsole-*` |
+| `OPENWISP_NETCONSOLE_MAX_LINES` | `1000` | righe massime per richiesta |
+| `OPENWISP_NETCONSOLE_MAX_BYTES` | `524288` | byte massimi letti per richiesta |
+| `OPENWISP_NETCONSOLE_REFRESH` | `5` | secondi tra un aggiornamento e l'altro (minimo 2) |
+| `OPENWISP_NETCONSOLE_IP_FALLBACK` | `True` | mostra anche le cartelle per IP |
+
+### Rotazione dei log
+
+La pagina **Monitoring → Rotazione dei log dei router**, visibile solo ai
+superuser, imposta la rotazione dei log dei router: syslog e netconsole.
+
+| Valore | Intervallo | Predefinito |
+|---|---|---|
+| frequenza | ogni giorno, settimana o mese | ogni giorno |
+| dimensione massima | 5–100 MB (controllo ogni ora) | 50 MB |
+| conservazione | 7–90 giorni | 30 giorni |
+| file ruotati massimi per log | 7–60 | 30 |
+
+La rotazione la fa logrotate, come root. OpenWISP non scrive configurazioni di
+sistema: salva i valori in `OPENWISP_NETCONSOLE_ROTATION_FILE`, un JSON in una
+sua directory. Ogni ora lo script di root (`router-logs-rotation` nel repo
+[openwisp2](https://github.com/mikysal78/openwisp2)):
+
+- lo rilegge come input non fidato e ricontrolla gli stessi limiti;
+- genera la configurazione di logrotate da un modello fisso;
+- scrive l'esito in `OPENWISP_NETCONSOLE_ROTATION_STATUS_FILE`, in una
+  directory di root. La pagina mostra quell'esito.
+
+### Router e rsyslog
+
+Sul router netconsole va caricato in formato esteso (`+` nei parametri) e il
+target deve avere l'userdata `ninux_node` con il nome del device. L'userdata
+richiede un kernel con `CONFIG_NETCONSOLE_DYNAMIC=y` (OpenWrt lo compila con
+`=n`). Esempio di script e configurazione rsyslog:
+[openwisp2](https://github.com/mikysal78/openwisp2) (template
+`openwisp-templates/netconsole.json`, `templates/rsyslog-router-logs.conf.j2`).
+
+## Sicurezza
+
+- **Accesso:** le viste sono dentro l'admin. Servono un utente staff
+  autenticato, un device del queryset dell'utente (filtrato per
+  organizzazione) e il permesso di vederlo. Altrimenti la risposta è 404.
+- **Percorsi:**
+  - il client non passa mai un percorso: sceglie una delle chiavi calcolate
+    dal server (nome e IP del device) e uno dei file elencati;
+  - chiavi e nomi dei file sono ricontrollati con espressioni regolari;
+  - la cartella deve essere una directory reale dentro la radice, quindi i
+    symlink sono scartati, e i file si aprono con `O_NOFOLLOW`.
+- **Log di altri device:** il nome di un device in OpenWISP non è univoco, e
+  un IP può passare da un router a un altro. Una chiave condivisa con un altro
+  device, anche di un'altra organizzazione, non viene mostrata. Un nome che è
+  esso stesso un IP viene ignorato.
+- **XSS:** il testo dei log arriva come JSON e la pagina lo inserisce con
+  `textContent`, mai come HTML.
+- **Carico:** ogni richiesta legge al massimo `MAX_BYTES` byte e la pagina
+  tiene al massimo 5000 righe. Le viste sono solo GET e non modificano nulla.
+- **Rotazione:**
+  - chi prendesse il controllo di OpenWISP potrebbe solo scegliere valori
+    negli intervalli della tabella: non può riempire il disco né far sparire i
+    log in poche ore;
+  - lo script di root legge il JSON senza seguire symlink, solo se è un file
+    regolare di al massimo 4 KB;
+  - nella configurazione di logrotate entrano solo numeri interi e una delle
+    tre frequenze ammesse. Con un valore non valido usa quelli del playbook e
+    lo segnala nell'esito.
+- **Limite noto:** il nome nell'userdata lo dichiara il router. Chi può
+  mandare UDP alla porta di netconsole può scrivere righe nella cartella di un
+  altro nodo. Limitate le sorgenti con il firewall e considerate questi log
+  come diagnostica, non come prova.
+
+## Sviluppo
+
+```bash
+pip install pytest
+pytest
+```
+
+I test coprono la lettura dei file (`logfiles.py`), compresi i tentativi di
+uscire dalla directory dei log, e le impostazioni di rotazione (`rotation.py`).
+
+GitHub Actions: **CI** (a ogni push e pull request) esegue ruff, i test con
+Python 3.10–3.13, il controllo che le migrazioni corrispondano ai modelli, i
+controlli su JavaScript e traduzione, e compila il pacchetto verificandone il
+contenuto. **Release** (a ogni tag `v*`) controlla che il tag corrisponda alla
+versione, compila wheel e sdist e li allega alla release di GitHub con
+`SHA256SUMS`.
+
+## Licenza
+
+GPL-3.0-or-later, come openwisp-controller.

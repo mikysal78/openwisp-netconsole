@@ -1,0 +1,100 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: openwisp-netconsole\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Netconsole"
+msgstr "Netconsole"
+
+msgid "No netconsole logs for this device."
+msgstr "Nessun log netconsole per questo device."
+
+msgid "Error while reading the logs."
+msgstr "Errore durante la lettura dei log."
+
+msgid "Updated at"
+msgstr "Aggiornato alle"
+
+msgid "Source"
+msgstr "Sorgente"
+
+msgid "Auto refresh"
+msgstr "Aggiornamento automatico"
+
+msgid "Download"
+msgstr "Scarica"
+
+msgid "Every day"
+msgstr "Ogni giorno"
+
+msgid "Every week"
+msgstr "Ogni settimana"
+
+msgid "Every month"
+msgstr "Ogni mese"
+
+msgid "rotation frequency"
+msgstr "frequenza della rotazione"
+
+msgid "A new file is started at this interval."
+msgstr "Con questa frequenza si comincia un file nuovo."
+
+msgid "maximum size (MB)"
+msgstr "dimensione massima (MB)"
+
+msgid "A file larger than this is rotated earlier (checked every hour)."
+msgstr "Un file più grande viene ruotato prima (controllo ogni ora)."
+
+msgid "retention (days)"
+msgstr "conservazione (giorni)"
+
+msgid "Rotated files older than this are deleted."
+msgstr "I file ruotati più vecchi vengono cancellati."
+
+msgid "maximum rotated files"
+msgstr "file ruotati massimi"
+
+msgid ""
+"Per log, at most this many rotated files are kept, even if younger than the "
+"retention: it protects the disk when a router writes a lot."
+msgstr ""
+"Per ogni log si tengono al massimo questi file ruotati, anche se più recenti "
+"della conservazione: protegge il disco quando un router scrive molto."
+
+msgid "modified"
+msgstr "modificato"
+
+msgid "router log rotation"
+msgstr "rotazione dei log dei router"
+
+msgid "Router log rotation"
+msgstr "Rotazione dei log dei router"
+
+#, python-format
+msgid "Settings saved in OpenWISP but not passed to the server: %(error)s"
+msgstr "Impostazioni salvate in OpenWISP ma non passate al server: %(error)s"
+
+msgid "The new settings are applied within an hour."
+msgstr "Le nuove impostazioni vengono applicate entro un'ora."
+
+msgid "status on the server"
+msgstr "stato sul server"
+
+msgid "Not applied yet: the server applies the settings every hour."
+msgstr "Non ancora applicate: il server applica le impostazioni ogni ora."
+
+msgid "Last applied"
+msgstr "Ultima applicazione"
+
+msgid "days"
+msgstr "giorni"
+
+msgid "files"
+msgstr "file"
+
+msgid "Error"
+msgstr "Errore"
