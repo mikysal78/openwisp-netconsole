@@ -5,9 +5,16 @@
 - Example playbook split into the `router_logs` role (defaults, tasks,
   handlers, templates): the playbook in the README is now a few lines.
 - Example template: the device name was never set on kernels 6.x, where the
-  target given to `insmod` shows up in configfs only after `mkdir cmdline0`;
-  the hook now creates it, and removes it before `rmmod`, which otherwise
-  fails because the configfs folder keeps the module busy.
+  target given to `insmod` shows up in configfs only after a `mkdir`. With
+  `CONFIG_NETCONSOLE_DYNAMIC=y` the hook now creates its own `ninux` target in
+  configfs and reconfigures it on every route change, without reloading the
+  module; without it, parameters are still given to `insmod`.
+- Example template: the hook checks netconsole again by itself every 5 minutes
+  (every minute while it fails): at boot the server may be unreachable, and
+  VPN interfaces recreated after boot disable the target without a new ifup.
+- Example template: raise the console log level to the OpenWrt default when a
+  bootloader passes `loglevel=1` (e.g. Zyxel), otherwise netconsole only
+  gets emergency messages.
 
 ## 0.1.2
 
