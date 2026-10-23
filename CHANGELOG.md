@@ -4,6 +4,10 @@
 
 - Example playbook split into the `router_logs` role (defaults, tasks,
   handlers, templates): the playbook in the README is now a few lines.
+- Example template: the device name was never set on kernels 6.x, where the
+  target given to `insmod` shows up in configfs only after `mkdir cmdline0`;
+  the hook now creates it, and removes it before `rmmod`, which otherwise
+  fails because the configfs folder keeps the module busy.
 
 ## 0.1.2
 

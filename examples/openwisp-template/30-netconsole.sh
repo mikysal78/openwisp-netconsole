@@ -28,9 +28,20 @@ esac
 netconsole_userdata() {
 	cfg=/sys/kernel/config
 	[ -d "$cfg/netconsole" ] || mount -t configfs configfs "$cfg" 2>/dev/null
-	ud="$cfg/netconsole/cmdline0/userdata"
-	[ -d "$ud" ] || return 0
-	mkdir -p "$ud/ninux_node" && printf '%s' "$NODE" >"$ud/ninux_node/value"
+	[ -d "$cfg/netconsole" ] || return 0
+	# the target from the module parameters shows up in configfs only after a
+	# mkdir with its name
+	nt="$cfg/netconsole/cmdline0"
+	[ -d "$nt" ] || mkdir "$nt" 2>/dev/null || return 0
+	mkdir -p "$nt/userdata/ninux_node" && printf '%s' "$NODE" >"$nt/userdata/ninux_node/value"
+}
+
+# the configfs folders keep the module busy: without removing them rmmod fails
+# and netconsole stays on the old parameters
+netconsole_release() {
+	nt=/sys/kernel/config/netconsole/cmdline0
+	[ -d "$nt" ] || return 0
+	rmdir "$nt/userdata/ninux_node" "$nt" 2>/dev/null
 }
 
 # shellcheck disable=SC2046
@@ -63,6 +74,7 @@ if [ "$(cat "$STATE" 2>/dev/null)" = "$params $ifindex $NODE" ] && grep -q '^net
 	exit 0
 fi
 
+netconsole_release
 rmmod netconsole 2>/dev/null
 if insmod netconsole "netconsole=+$params"; then
 	[ -z "$NODE" ] || netconsole_userdata
