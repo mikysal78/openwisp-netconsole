@@ -40,13 +40,12 @@ netconsole_set() {
 	fi
 	nt="$cfg/netconsole/ninux"
 	if [ ! -d "$nt" ]; then
-		# module loaded with parameters by an older version of this script
-		# (cmdline0 target): start again from a module without targets; the
-		# cmdline0 folder keeps the module busy and must go before rmmod
-		if [ -d "$cfg/netconsole/cmdline0" ]; then
-			rmdir "$cfg/netconsole/cmdline0/userdata/ninux_node" "$cfg/netconsole/cmdline0" 2>/dev/null
-			rmmod netconsole && insmod netconsole || return 1
-		fi
+		# the module may have been loaded with parameters by an older version of
+		# this script (cmdline0 target, even without a configfs folder): start
+		# again from a module without targets. The cmdline0 folder keeps the
+		# module busy and must go before rmmod
+		rmdir "$cfg/netconsole/cmdline0/userdata/ninux_node" "$cfg/netconsole/cmdline0" 2>/dev/null
+		rmmod netconsole && insmod netconsole || return 1
 		mkdir "$nt" || return 1
 	fi
 	[ "$(cat "$nt/enabled")" = 0 ] || echo 0 >"$nt/enabled" || return 1
