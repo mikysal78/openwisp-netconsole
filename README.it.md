@@ -2,6 +2,8 @@
 
 [🇬🇧 English](README.md) | 🇮🇹 Italiano
 
+> 📖 Questo repository fa parte dell'infrastruttura di **NINUX Basilicata**: la guida per ricostruirla tutta, passo passo (Proxmox, DNS, OpenWISP, moduli, firmware, app), è su **[docs.ninux-nnxx.it](https://docs.ninux-nnxx.it)**.
+
 [![CI](https://github.com/mikysal78/openwisp-netconsole/actions/workflows/ci.yml/badge.svg)](https://github.com/mikysal78/openwisp-netconsole/actions/workflows/ci.yml)
 
 Scheda **Netconsole** nella pagina del device di [OpenWISP](https://openwisp.org/):
