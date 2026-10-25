@@ -1,7 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
+- API for apps: `GET /api/v1/netconsole/device/<uuid>/logs/?lines=200` with
+  the OpenWISP token (`Authorization: Bearer <token>`) returns the last lines
+  of the netconsole logs of the device, after the same checks as the tab. Used
+  by [openwisp-android](https://github.com/mikysal78/openwisp-android).
+  Include `openwisp_netconsole.api_urls` under `api/v1/` to enable it. Only
+  the Bearer token is accepted (never the browser session), and a device the
+  user cannot see answers 404 like a missing one.
 - Example playbook split into the `router_logs` role (defaults, tasks,
   handlers, templates): the playbook in the README is now a few lines.
 - Example template: the device name was never set on kernels 6.x, where the

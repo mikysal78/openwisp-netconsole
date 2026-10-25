@@ -19,7 +19,6 @@ Sicurezza:
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.urls import path, reverse
@@ -31,7 +30,7 @@ from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 from swapper import load_model
 
-from . import logfiles, rotation
+from . import logfiles, rotation, sources
 from . import settings as app_settings
 from .models import RotationSettings
 
@@ -89,20 +88,7 @@ class NetconsoleDeviceAdmin(BaseDeviceAdmin):
         return device
 
     def _netconsole_sources(self, device):
-        """Chiavi (nome, IP) del device che non appartengono anche ad altri."""
-        others = Device.objects.exclude(pk=device.pk)
-        ips = []
-        if app_settings.IP_FALLBACK:
-            ips = [device.management_ip, device.last_ip]
-        keys = []
-        for kind, key in logfiles.source_keys(device.name, ips):
-            if kind == "name":
-                shared = others.filter(name=key).exists()
-            else:
-                shared = others.filter(Q(management_ip=key) | Q(last_ip=key)).exists()
-            if not shared:
-                keys.append((kind, key))
-        return logfiles.device_sources(app_settings.LOG_DIR, keys)
+        return sources.device_sources(device, Device)
 
     def _netconsole_source(self, request, device):
         sources = self._netconsole_sources(device)

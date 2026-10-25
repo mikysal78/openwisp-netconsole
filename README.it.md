@@ -53,13 +53,13 @@ Dalla [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (wheel già compilato, con `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl
 ```
 
 oppure dal tag git:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.2"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.2.0"
 ```
 
 In `settings.py`, **dopo** `openwisp_controller.config` e
@@ -109,9 +109,12 @@ ansible-playbook -i hosts playbook.yml
     - router_logs
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl"
     openwisp2_extra_django_apps:
       - openwisp_netconsole
+    # facoltativo: API per le app come openwisp-android
+    openwisp2_extra_urls:
+      - 'path("api/v1/", include("openwisp_netconsole.api_urls"))'
     # Optional, see the role defaults:
     # router_logs_retention_days: 15
 ```
@@ -165,6 +168,27 @@ Requisiti del firmware:
 
 La CI controlla lo script con `shellcheck` e genera il template con
 netjsonconfig.
+
+## API per le app
+
+Le app come [openwisp-android](https://github.com/mikysal78/openwisp-android)
+leggono le ultime righe dei log con il token delle API di OpenWISP
+dell'utente, dopo aver aggiunto
+`path("api/v1/", include("openwisp_netconsole.api_urls"))` alle URL del
+progetto:
+
+```
+GET /api/v1/netconsole/device/<uuid del device>/logs/?lines=200
+Authorization: Bearer <token da /api/v1/users/token/>
+
+200 [{"kind": "name", "key": "C2600", "lines": ["...", "..."]}]
+```
+
+I controlli sono quelli della scheda e i log sono gli stessi (mai un percorso
+dal client). `lines` va da 1 a `OPENWISP_NETCONSOLE_MAX_LINES` (default 1000; 200 se manca).
+L'API accetta solo il token Bearer, mai la sessione del browser. Risposte:
+`401` token mancante o non valido, `404` device inesistente o non consentito
+(i due casi non si distinguono).
 
 ## Sicurezza
 

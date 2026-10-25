@@ -16,8 +16,11 @@
     - router_logs
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl"
     openwisp2_extra_django_apps:
       - openwisp_netconsole
+    # optional: API for apps such as openwisp-android
+    openwisp2_extra_urls:
+      - 'path("api/v1/", include("openwisp_netconsole.api_urls"))'
     # Optional, see the role defaults:
     # router_logs_retention_days: 15

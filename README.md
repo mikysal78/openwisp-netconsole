@@ -53,13 +53,13 @@ From the [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (built wheel, with `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl
 ```
 
 or from the git tag:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.1.2"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.2.0"
 ```
 
 In `settings.py`, **after** `openwisp_controller.config` and
@@ -109,9 +109,12 @@ ansible-playbook -i hosts playbook.yml
     - router_logs
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.1.2/openwisp_netconsole-0.1.2-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl"
     openwisp2_extra_django_apps:
       - openwisp_netconsole
+    # optional: API for apps such as openwisp-android
+    openwisp2_extra_urls:
+      - 'path("api/v1/", include("openwisp_netconsole.api_urls"))'
     # Optional, see the role defaults:
     # router_logs_retention_days: 15
 ```
@@ -165,6 +168,26 @@ Firmware requirements:
 
 CI checks the script with `shellcheck` and renders the template with
 netjsonconfig.
+
+## API for apps
+
+Apps such as [openwisp-android](https://github.com/mikysal78/openwisp-android)
+read the last lines of the logs with the OpenWISP API token of the user,
+after `path("api/v1/", include("openwisp_netconsole.api_urls"))` is added to
+the URLs of the project:
+
+```
+GET /api/v1/netconsole/device/<device uuid>/logs/?lines=200
+Authorization: Bearer <token from /api/v1/users/token/>
+
+200 [{"kind": "name", "key": "C2600", "lines": ["...", "..."]}]
+```
+
+The checks are the same as for the tab, and the logs are the same (never a
+path from the client). `lines` goes from 1 to `OPENWISP_NETCONSOLE_MAX_LINES`
+(default 1000; 200 if omitted). Only the Bearer token is accepted, never the browser session.
+Answers: `401` missing or invalid token, `404` device missing or not allowed
+(the two are not distinguished).
 
 ## Security
 

@@ -5,6 +5,9 @@ import zipfile
 
 REQUIRED = [
     "openwisp_netconsole/admin.py",
+    "openwisp_netconsole/api.py",
+    "openwisp_netconsole/api_urls.py",
+    "openwisp_netconsole/sources.py",
     "openwisp_netconsole/models.py",
     "openwisp_netconsole/migrations/__init__.py",
     "openwisp_netconsole/migrations/0001_initial.py",
