@@ -53,13 +53,13 @@ Dalla [release](https://github.com/mikysal78/openwisp-netconsole/releases)
 (wheel già compilato, con `SHA256SUMS`):
 
 ```bash
-pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl
+pip install https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.1/openwisp_netconsole-0.2.1-py3-none-any.whl
 ```
 
 oppure dal tag git:
 
 ```bash
-pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.2.0"
+pip install "openwisp-netconsole @ git+https://github.com/mikysal78/openwisp-netconsole@v0.2.1"
 ```
 
 In `settings.py`, **dopo** `openwisp_controller.config` e
@@ -109,7 +109,7 @@ ansible-playbook -i hosts playbook.yml
     - router_logs
   vars:
     openwisp2_extra_python_packages:
-      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.0/openwisp_netconsole-0.2.0-py3-none-any.whl"
+      - "openwisp-netconsole @ https://github.com/mikysal78/openwisp-netconsole/releases/download/v0.2.1/openwisp_netconsole-0.2.1-py3-none-any.whl"
     openwisp2_extra_django_apps:
       - openwisp_netconsole
     # facoltativo: API per le app come openwisp-android

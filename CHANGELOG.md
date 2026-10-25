@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Release workflow: install Django for the tests (the 0.2.0 release was not
+  built). No changes to the package.
+
 ## 0.2.0
 
 - API for apps: `GET /api/v1/netconsole/device/<uuid>/logs/?lines=200` with
